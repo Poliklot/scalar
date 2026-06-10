@@ -5,7 +5,6 @@ import type { WorkspaceStore } from '@scalar/workspace-store/client'
 import type { AuthStore } from '@scalar/workspace-store/entities/auth'
 import type { WorkspaceEventBus } from '@scalar/workspace-store/events'
 import { getResolvedPathItem } from '@scalar/workspace-store/helpers/for-each-path-item-operation'
-import { getResolvedRef } from '@scalar/workspace-store/helpers/get-resolved-ref'
 import type { MergedSecuritySchemes } from '@scalar/workspace-store/request-example'
 import type {
   TraversedEntry,
@@ -17,6 +16,7 @@ import type {
 } from '@scalar/workspace-store/schemas/navigation'
 import type {
   OpenApiDocument,
+  SchemaObject,
   ServerObject,
 } from '@scalar/workspace-store/schemas/v3.1/strict/openapi-document'
 
@@ -212,6 +212,11 @@ function getPathValue(entry: TraversedOperation | TraversedWebhook) {
       </TraversedEntry>
     </ModelTag>
 
+    <!--
+      Pass the model schema unresolved so a resource extending a template through a root `$ref`
+      keeps its sibling `$defs` (the `$dynamicAnchor` binding); `Schema.vue` merges the root
+      `$ref` itself for rendering.
+    -->
     <Model
       v-else-if="isModel(entry) && document.components?.schemas?.[entry.name]"
       :id="entry.id"
@@ -220,7 +225,7 @@ function getPathValue(entry: TraversedOperation | TraversedWebhook) {
       :isCollapsed="!expandedItems[entry.id]"
       :name="entry.name"
       :options
-      :schema="getResolvedRef(document.components.schemas[entry.name])">
+      :schema="document.components.schemas[entry.name] as SchemaObject">
     </Model>
   </Lazy>
 </template>
