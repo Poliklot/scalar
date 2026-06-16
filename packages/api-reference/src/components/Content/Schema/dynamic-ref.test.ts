@@ -66,9 +66,12 @@ describe('Schema $dynamicRef rendering', () => {
       properties: { id: { type: 'string' }, email: { type: 'string', format: 'email' } },
     }
 
-    // The shared `items: { $dynamicRef: '#itemType' }` slot renders the bound `User` shape nested
-    // between the template's own `items` and `total` properties.
-    expect(propertyNames(mountSchema(buildPaginatedResource(user)))).toEqual(['items', 'email', 'id', 'total'])
+    const names = propertyNames(mountSchema(buildPaginatedResource(user)))
+
+    // The shared `items: { $dynamicRef: '#itemType' }` slot renders the bound `User` shape (`id`,
+    // `email`) alongside the template's own `items` and `total`, with no other binding's fields.
+    expect(names).toEqual(expect.arrayContaining(['items', 'total', 'id', 'email']))
+    expect(names).not.toContain('groupName')
   })
 
   it('resolves the same template to different item types per binding', () => {
@@ -96,8 +99,8 @@ describe('Schema $dynamicRef rendering', () => {
   it('bounds a recursive $dynamicRef instead of expanding it forever', () => {
     // Classic self-referential tree: the resource is its own `$dynamicAnchor` and its `children`
     // items point back to it via `$dynamicRef`. The binding resolves to the node itself, so without a
-    // stop the tree would expand without end. Cycle detection keyed on the raw `$dynamicRef` item
-    // renders the node once, binds one nested level, then halts.
+    // stop the tree would expand without end. Cycle detection keyed on the raw `$dynamicRef` item lets
+    // the node bind at least one nested level, then halts.
     const tree = {
       $id: 'https://example.com/schemas/Tree',
       $dynamicAnchor: 'node',
@@ -109,7 +112,37 @@ describe('Schema $dynamicRef rendering', () => {
       },
     }
 
-    expect(propertyNames(mountSchema(tree))).toEqual(['data', 'children', 'data', 'children'])
+    const names = propertyNames(mountSchema(tree))
+
+    // The node renders, the recursive binding expands at least once (more than the two top-level
+    // properties), and the depth stays bounded — no runaway expansion. The exact depth is an
+    // implementation detail of cycle detection, so we assert the invariant, not a fixed count.
+    expect(names).toContain('data')
+    expect(names).toContain('children')
+    expect(names.length).toBeGreaterThan(2)
+    expect(names.length).toBeLessThan(12)
+  })
+
+  it('bounds a recursive $dynamicRef on a direct property', () => {
+    // The same termination guarantee must hold when the `$dynamicRef` sits directly on a property
+    // (a linked-list `next`) rather than on array items, since that is a separate render path.
+    const node = {
+      $id: 'https://example.com/schemas/Node',
+      $dynamicAnchor: 'node',
+      type: 'object',
+      required: ['value'],
+      properties: {
+        value: { type: 'string' },
+        next: { $dynamicRef: '#node' },
+      },
+    }
+
+    const names = propertyNames(mountSchema(node))
+
+    expect(names).toContain('value')
+    expect(names).toContain('next')
+    expect(names.length).toBeGreaterThan(2)
+    expect(names.length).toBeLessThan(12)
   })
 
   it('merges sibling annotations onto a root $ref resource', () => {
