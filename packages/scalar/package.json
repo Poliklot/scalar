@@ -22,14 +22,13 @@
   "engines": {
     "node": ">=20"
   },
-  "type": "module",
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json --emitDeclarationOnly",
     "dev": "vite build --watch",
     "types:check": "tsc --noEmit"
   },
+  "type": "module",
   "module": "./dist/index.js",
-  "browser": "./dist/index.js",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -41,6 +40,26 @@
     "dist",
     "CHANGELOG.md"
   ],
+  "readme": {
+    "title": "Scalar API Reference (ESM)",
+    "badges": [
+      {
+        "type": "npm-version"
+      },
+      {
+        "type": "npm-downloads"
+      },
+      {
+        "type": "npm-license"
+      }
+    ],
+    "documentation": "https://github.com/scalar/scalar/blob/main/documentation/integrations/html-js.md",
+    "extraContent": {
+      "headline": "Quickstart",
+      "content": "Load the API Reference straight from a CDN with a plain module import — no build step required:\n\n```html\n<!doctype html>\n<html>\n  <head>\n    <title>Scalar API Reference</title>\n    <meta charset=\"utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n  </head>\n  <body>\n    <div id=\"app\"></div>\n\n    <script type=\"module\">\n      import { createApiReference } from 'https://cdn.jsdelivr.net/npm/@scalar/scalar'\n\n      createApiReference('#app', {\n        // The URL of the OpenAPI/Swagger document\n        url: 'https://registry.scalar.com/@scalar/apis/galaxy?format=json',\n        // Avoid CORS issues\n        proxyUrl: 'https://proxy.scalar.com',\n      })\n    </script>\n  </body>\n</html>\n```"
+    }
+  },
+  "browser": "./dist/index.js",
   "dependencies": {
     "@scalar/api-reference": "workspace:*"
   },
