@@ -7,35 +7,25 @@ import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
 import { name, version } from './package.json'
 
 /**
- * Where the lazy chunks live at runtime.
+ * Rewrite relative chunk imports to a root-relative, version-pinned path.
  *
- * The whole point of this package is that it can be loaded from a bare CDN URL
- * (`https://cdn.jsdelivr.net/npm/@scalar/scalar`). jsDelivr serves that bare URL *inline* — it does
- * not redirect to the real file path — so a relative `./chunks/...` import would resolve against the
- * wrong base and 404. To make code-splitting work from the bare URL we therefore bake an **absolute**
- * URL (pinned to this exact package + version) into every chunk reference.
- *
- * Override `SCALAR_CDN_BASE` (must end with a trailing slash) to point the chunks somewhere else —
- * e.g. a local server when verifying a build, or a different CDN.
+ * The whole point of this package is the short bare CDN URL
+ * (`https://cdn.jsdelivr.net/npm/@scalar/scalar`). jsDelivr serves that bare URL inline without
+ * redirecting to the real file path, so a plain `./chunks/x.js` would resolve against
+ * `…/npm/@scalar/` and 404. We can't fix that with a normal relative path — but a root-relative one
+ * (leading `/`, no host) resolves against the entry's origin, which is always the CDN, so it works
+ * from the bare URL and stays consistent when the URL is version-pinned. The base is derived from
+ * `package.json` (name + version); no CDN host or absolute URL is hardcoded.
  */
-const CDN_BASE = process.env.SCALAR_CDN_BASE ?? `https://cdn.jsdelivr.net/npm/${name}@${version}/dist/`
+const rewriteChunkUrls = (): Plugin => {
+  const chunkBase = `/npm/${name}@${version}/dist/`
 
-/**
- * Rewrite every relative chunk import in the build output to an absolute `CDN_BASE` URL.
- *
- * `experimental.renderBuiltUrl` does not touch chunk-to-chunk import specifiers under Rolldown's
- * library build, so we do it ourselves in `generateBundle`: each relative specifier is resolved
- * against its own chunk's directory, then re-pointed at the absolute CDN URL. This makes both the
- * eager (`import … from`) and lazy (`import(…)`) chunks resolve correctly when the entry is loaded
- * from the bare CDN URL, where relative resolution would otherwise break.
- */
-const rewriteChunkUrlsToCdn = (): Plugin => {
   // Matches the specifier of static imports/re-exports (`from"…"`), side-effect imports (`import"…"`)
   // and dynamic imports (`import("…")`), while ignoring property access like `Array.from("…")`.
   const importSpecifier = /(?<![\w.$])((?:from|import)\s*\(?\s*)(["'])([^"']+)\2/g
 
   return {
-    name: 'scalar:rewrite-chunk-urls-to-cdn',
+    name: 'scalar:rewrite-chunk-urls',
     generateBundle(_options, bundle) {
       for (const file of Object.values(bundle)) {
         if (file.type !== 'chunk') {
@@ -49,9 +39,10 @@ const rewriteChunkUrlsToCdn = (): Plugin => {
             return match
           }
 
-          // Resolve the relative specifier to a path relative to the dist root, then make it absolute.
+          // Resolve the relative specifier to a path relative to the dist root, then make it
+          // root-relative against the package's published location on the CDN.
           const resolved = posix.normalize(posix.join(fromDir, specifier))
-          return `${prefix}${quote}${CDN_BASE}${resolved}${quote}`
+          return `${prefix}${quote}${chunkBase}${resolved}${quote}`
         })
       }
     },
@@ -73,7 +64,7 @@ export default defineConfig({
     'process.env.NODE_ENV': '"production"',
   },
   plugins: [
-    rewriteChunkUrlsToCdn(),
+    rewriteChunkUrls(),
     // Inline the bundled CSS and inject it at runtime, tagged with a known id so the runtime can
     // detach it on `destroy()`. `useStrictCSP` lets the injected <style> pick up a CSP nonce from a
     // `<meta property="csp-nonce">` tag. Kept in sync with the standalone build in @scalar/api-reference.
@@ -97,6 +88,9 @@ export default defineConfig({
       },
       output: {
         entryFileNames: '[name].js',
+        // Lazy chunks ship as siblings under dist/chunks/ with plain relative imports. Loaded from the
+        // package's dist path (.../@scalar/scalar/dist/index.js), jsDelivr resolves them correctly, and
+        // a pinned entry version stays consistent with its chunks automatically.
         chunkFileNames: 'chunks/[name]-[hash].js',
         // Keep genuinely-async boundaries (API client modal, YAML parser, per-icon imports) as real
         // lazy chunks instead of inlining them into the entry.
