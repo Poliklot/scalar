@@ -1,0 +1,52 @@
+{
+  "name": "@scalar/scalar",
+  "description": "The Scalar API Reference bundled as a single, code-split ES module for loading straight from a CDN",
+  "license": "MIT",
+  "author": "Scalar (https://github.com/scalar)",
+  "homepage": "https://github.com/scalar/scalar",
+  "bugs": "https://github.com/scalar/scalar/issues/new/choose",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scalar/scalar.git",
+    "directory": "packages/scalar"
+  },
+  "keywords": [
+    "api",
+    "documentation",
+    "openapi",
+    "swagger",
+    "cdn",
+    "esm"
+  ],
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "dev": "vite build --watch",
+    "types:check": "tsc --noEmit"
+  },
+  "module": "./dist/index.js",
+  "browser": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
+  "dependencies": {
+    "@scalar/api-reference": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "catalog:*",
+    "vite-plugin-banner": "^0.8.1",
+    "vite-plugin-css-injected-by-js": "catalog:*"
+  }
+}
