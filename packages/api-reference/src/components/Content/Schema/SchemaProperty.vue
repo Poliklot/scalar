@@ -4,7 +4,7 @@ import { ScalarWrappingText } from '@scalar/components/wrapping-text'
 import type { WorkspaceEventBus } from '@scalar/workspace-store/events'
 import {
   isDynamicRef,
-  resolveDynamicRef,
+  resolveDynamicSchema,
 } from '@scalar/workspace-store/helpers/dynamic-ref'
 import { resolve } from '@scalar/workspace-store/resolve'
 import type {
@@ -15,10 +15,7 @@ import { isArraySchema } from '@scalar/workspace-store/schemas/v3.1/strict/type-
 import { computed, type Component } from 'vue'
 
 import { WithBreadcrumb } from '@/components/Anchor'
-import {
-  resolveDynamicSchema,
-  useDynamicScope,
-} from '@/components/Content/Schema/helpers/dynamic-scope'
+import { useDynamicScope } from '@/components/Content/Schema/helpers/dynamic-scope'
 import { isTypeObject } from '@/components/Content/Schema/helpers/is-type-object'
 import { getCycleKey } from '@/components/Content/Schema/helpers/schema-cycle'
 import type { SchemaOptions } from '@/components/Content/Schema/types'
@@ -130,8 +127,12 @@ const arrayValueWithBoundItems = computed(() => {
     return value
   }
 
-  const bound = resolveDynamicRef(value.items.$dynamicRef, dynamicScope)
-  return bound ? ({ ...value, items: bound } as SchemaObject) : value
+  // `resolveDynamicSchema` returns the items unchanged when nothing in scope matches, so an
+  // unresolved `$dynamicRef` leaves the array exactly as it rendered before.
+  const boundItems = resolveDynamicSchema(value.items, dynamicScope)
+  return boundItems !== value.items
+    ? ({ ...value, items: boundItems } as SchemaObject)
+    : value
 })
 
 /** Checks if array items have complex structure */

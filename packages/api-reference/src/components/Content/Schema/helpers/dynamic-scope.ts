@@ -1,5 +1,4 @@
-import { type DynamicScope, isDynamicRef, resolveDynamicRef } from '@scalar/workspace-store/helpers/dynamic-ref'
-import type { SchemaObject } from '@scalar/workspace-store/schemas/v3.1/strict/openapi-document'
+import type { DynamicScope } from '@scalar/workspace-store/helpers/dynamic-ref'
 import { type InjectionKey, inject } from 'vue'
 
 /**
@@ -21,18 +20,3 @@ const EMPTY_SCOPE: DynamicScope = []
 
 /** Read the dynamic scope provided by ancestor schema nodes (empty at the root of the tree). */
 export const useDynamicScope = (): DynamicScope => inject(SCHEMA_DYNAMIC_SCOPE_SYMBOL, EMPTY_SCOPE)
-
-/**
- * Resolve a schema that may be a `$dynamicRef` against the active dynamic scope.
- *
- * Returns the bound concrete schema when the reference matches a `$dynamicAnchor` in scope. When
- * nothing matches (or the schema is not a `$dynamicRef`) the input is returned unchanged, so
- * rendering falls back to its prior behavior with no regression.
- */
-export const resolveDynamicSchema = <T extends SchemaObject | undefined>(schema: T, scope: DynamicScope): T => {
-  if (isDynamicRef(schema)) {
-    return (resolveDynamicRef(schema.$dynamicRef, scope) as T) ?? schema
-  }
-
-  return schema
-}

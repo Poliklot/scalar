@@ -112,3 +112,27 @@ export const resolveDynamicRef = (dynamicRef: string, scope: DynamicScope): Sche
 
   return undefined
 }
+
+/**
+ * Bind a schema that may be a `$dynamicRef` to its concrete type, preserving sibling keywords.
+ *
+ * JSON Schema 2020-12 evaluates `$dynamicRef` as an applicator, so keywords sitting alongside it
+ * (annotations like `description`/`title`, or further constraints) still apply. We therefore overlay
+ * the original siblings onto the bound target, with siblings winning — the same precedence
+ * {@link mergeSiblingReferences} gives `$ref`. When the schema is not a `$dynamicRef`, or nothing in
+ * scope matches, the input is returned unchanged so rendering falls back to its prior behavior.
+ */
+export const resolveDynamicSchema = <T extends SchemaObject | undefined>(schema: T, scope: DynamicScope): T => {
+  if (!isDynamicRef(schema)) {
+    return schema
+  }
+
+  const bound = resolveDynamicRef(schema.$dynamicRef, scope)
+  if (!bound) {
+    return schema
+  }
+
+  // Drop `$dynamicRef` itself (it has been resolved) and keep the remaining siblings.
+  const { $dynamicRef: _dynamicRef, ...siblings } = schema
+  return { ...bound, ...siblings } as T
+}

@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import type { SchemaObject } from '../schemas/v3.1/strict/schema'
-import { collectDynamicAnchors, isDynamicRef, pushDynamicScope, resolveDynamicRef } from './dynamic-ref'
+import {
+  collectDynamicAnchors,
+  isDynamicRef,
+  pushDynamicScope,
+  resolveDynamicRef,
+  resolveDynamicSchema,
+} from './dynamic-ref'
 
 /** Cast a plain object to a SchemaObject so tests can use the untyped 2020-12 keywords (`$defs`). */
 const schema = (value: Record<string, unknown>) => value as unknown as SchemaObject
@@ -95,6 +101,44 @@ describe('dynamic-ref', () => {
     it('ignores non-fragment and JSON-pointer references', () => {
       expect(resolveDynamicRef('urn:outer', [outer])).toBeUndefined()
       expect(resolveDynamicRef('#/$defs/itemType', [outer])).toBeUndefined()
+    })
+  })
+
+  describe('resolveDynamicSchema', () => {
+    const scope = [schema({ $id: 'urn:outer', $defs: { itemType: { $dynamicAnchor: 'itemType', type: 'string' } } })]
+
+    it('returns non-dynamic-ref schemas unchanged', () => {
+      const ordinary = schema({ type: 'object' })
+      expect(resolveDynamicSchema(ordinary, scope)).toBe(ordinary)
+    })
+
+    it('returns the schema unchanged when nothing in scope matches', () => {
+      const unresolved = schema({ $dynamicRef: '#missing' })
+      expect(resolveDynamicSchema(unresolved, scope)).toBe(unresolved)
+    })
+
+    it('binds a $dynamicRef to its concrete type', () => {
+      const result = resolveDynamicSchema(schema({ $dynamicRef: '#itemType' }), scope)
+      expect(result).toMatchObject({ type: 'string' })
+      expect(result).not.toHaveProperty('$dynamicRef')
+    })
+
+    it('preserves sibling keywords, with siblings overriding the bound target', () => {
+      const withSiblings = schema({
+        $dynamicRef: '#itemType',
+        description: 'The next node',
+        deprecated: true,
+      })
+
+      const result = resolveDynamicSchema(withSiblings, scope)
+
+      // `$dynamicRef` is consumed, the concrete type comes from the anchor, and the annotations survive.
+      expect(result).toMatchObject({ type: 'string', description: 'The next node', deprecated: true })
+      expect(result).not.toHaveProperty('$dynamicRef')
+    })
+
+    it('passes undefined through', () => {
+      expect(resolveDynamicSchema(undefined, scope)).toBeUndefined()
     })
   })
 })
