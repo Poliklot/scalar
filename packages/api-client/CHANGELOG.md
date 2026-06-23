@@ -1,5 +1,11 @@
 # @scalar/api-client
 
+## 3.11.1
+
+### Patch Changes
+
+- [#9548](https://github.com/scalar/scalar/pull/9548): Keep request and response example pickers in sync across operations. Selecting an example (e.g. "Use case 1") now selects the example with the same key on every other operation that defines it, mirroring how the programming-language selection already syncs. Operations that do not have a matching example keep their current selection.
+
 ## 3.11.0
 
 ### Minor Changes

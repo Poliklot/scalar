@@ -1,5 +1,16 @@
 # @scalar/workspace-store
 
+## 0.55.0
+
+### Minor Changes
+
+- [#9543](https://github.com/scalar/scalar/pull/9543): Add the `x-scalar-links` OpenAPI extension to render extra named links (like a privacy policy or imprint) next to the contact, license and terms of service links in the introduction.
+
+### Patch Changes
+
+- [#9583](https://github.com/scalar/scalar/pull/9583): Serialize array values inside `deepObject` query parameters with the trailing bracket convention (`filter[ids][]=1&filter[ids][]=2`) instead of collapsing them into a single comma-joined value
+- [#9548](https://github.com/scalar/scalar/pull/9548): Keep request and response example pickers in sync across operations. Selecting an example (e.g. "Use case 1") now selects the example with the same key on every other operation that defines it, mirroring how the programming-language selection already syncs. Operations that do not have a matching example keep their current selection.
+
 ## 0.54.5
 
 ### Patch Changes

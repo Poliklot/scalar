@@ -1,5 +1,15 @@
 # @scalar/schemas
 
+## 0.7.0
+
+### Minor Changes
+
+- [#9543](https://github.com/scalar/scalar/pull/9543): Add the `x-scalar-links` OpenAPI extension to render extra named links (like a privacy policy or imprint) next to the contact, license and terms of service links in the introduction.
+
+### Patch Changes
+
+- [#9577](https://github.com/scalar/scalar/pull/9577): Stop marking the per-source `title` and `slug` as deprecated. They are the supported way to name a document and its URL when using multiple `sources`, so the deprecation note (and editor strike-through) was misleading.
+
 ## 0.6.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @scalar/types
 
+## 0.15.1
+
+### Patch Changes
+
+- [#9577](https://github.com/scalar/scalar/pull/9577): Stop marking the per-source `title` and `slug` as deprecated. They are the supported way to name a document and its URL when using multiple `sources`, so the deprecation note (and editor strike-through) was misleading.
+
 ## 0.15.0
 
 ### Minor Changes
