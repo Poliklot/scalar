@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { ScalarBadge } from '@scalar/components/badge'
 import { computed } from 'vue'
 
-import { Badge } from '@/components/Badge'
 import { useLocalization } from '@/features/localization'
 
 const { servers = [], protocols = [] } = defineProps<{
@@ -22,23 +22,23 @@ const hasLabels = computed(() => servers.length > 0 || protocols.length > 0)
     class="async-api-labels">
     <template v-if="servers.length">
       <span class="sr-only">{{ translate('asyncapi.servers') }}:</span>
-      <Badge
+      <ScalarBadge
         v-for="server in servers"
         :key="`server-${server}`"
         class="async-api-label--server"
         :title="server">
         {{ server }}
-      </Badge>
+      </ScalarBadge>
     </template>
     <template v-if="protocols.length">
       <span class="sr-only">{{ translate('asyncapi.protocols') }}:</span>
-      <Badge
+      <ScalarBadge
         v-for="protocol in protocols"
         :key="`protocol-${protocol}`"
         class="async-api-label--protocol"
         :title="protocol">
         {{ protocol }}
-      </Badge>
+      </ScalarBadge>
     </template>
   </div>
 </template>

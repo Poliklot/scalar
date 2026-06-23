@@ -13,19 +13,17 @@ import type {
 } from '@scalar/workspace-store/schemas/v3.1/strict/openapi-document'
 import { computed, inject, ref, watch } from 'vue'
 
-import type { SchemaOptions } from '@/components/Content/Schema/types'
-import { useLocalization } from '@/features/localization'
-import {
-  REQUEST_BODY_COMPOSITION_INDEX_SYMBOL,
-  type RequestBodyCompositionSelection,
-} from '@/features/Operation/request-body-composition-index'
-
 import { getSchemaType } from './helpers/get-schema-type'
 import { mergeAllOfSchemas } from './helpers/merge-all-of-schemas'
 import { type CompositionKeyword } from './helpers/schema-composition'
 import { getCycleKey } from './helpers/schema-cycle'
 import { getModelNameFromSchema } from './helpers/schema-name'
+import {
+  REQUEST_BODY_COMPOSITION_INDEX_SYMBOL,
+  type RequestBodyCompositionSelection,
+} from './injection-keys'
 import Schema from './Schema.vue'
+import type { SchemaOptions } from './types'
 
 const props = withDefaults(
   defineProps<{
@@ -61,7 +59,6 @@ const props = withDefaults(
     hideHeading: false,
   },
 )
-const { translate } = useLocalization()
 
 /** The current composition */
 const composition = computed(() =>
@@ -81,7 +78,7 @@ const listboxOptions = computed((): ScalarListboxOption[] =>
     const resolved = resolve.schema(schema.original!)
     const label =
       (getModelNameFromSchema(resolved)?.label ?? getSchemaType(resolved)) ||
-      translate('schema.schema')
+      'Schema'
     return { id: String(index), label }
   }),
 )
@@ -136,8 +133,16 @@ watch(
   { immediate: true },
 )
 
-const compositionLabel = (type: CompositionKeyword): string =>
-  translate(`schema.${type}`)
+/**
+ * Humanize composition keyword name for display.
+ * Converts camelCase to Title Case (e.g., oneOf -> One of).
+ */
+const humanizeType = (type: CompositionKeyword): string =>
+  type
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, (str) => str.toUpperCase())
+    .toLowerCase()
+    .replace(/^(\w)/, (c) => c.toUpperCase())
 
 /** Inside the currently selected composition */
 const selectedComposition = computed(
@@ -230,20 +235,18 @@ if (
         <button
           class="composition-selector bg-b-1.5 hover:bg-b-2 flex w-full cursor-pointer items-center gap-1 rounded-t-lg border px-2.5 py-2.5 pr-3 text-left"
           type="button">
-          <span class="text-c-2">{{
-            compositionLabel(props.composition)
-          }}</span>
+          <span class="text-c-2">{{ humanizeType(props.composition) }}</span>
           <span
             class="composition-selector-label text-c-1"
             :class="{
               'line-through': selectedComposition?.deprecated,
             }">
-            {{ selectedOption?.label || translate('schema.schema') }}
+            {{ selectedOption?.label || 'Schema' }}
           </span>
           <div
             v-if="selectedComposition?.deprecated"
             class="text-red">
-            {{ translate('common.deprecated') }}
+            deprecated
           </div>
           <ScalarIconCaretDown />
         </button>
@@ -256,7 +259,7 @@ if (
           class="bg-b-1 hover:bg-b-2 text-c-1 flex w-full items-center justify-center gap-2 rounded-b-lg border border-t-0 px-2 py-2 text-sm font-medium transition-colors"
           type="button"
           @click="showNestedSchema = true">
-          {{ translate('schema.showSchemaDetails') }}
+          Show Schema Details
           <ScalarIconCaretDown class="h-3 w-3" />
         </button>
 

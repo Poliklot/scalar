@@ -4,11 +4,11 @@ import {
   ScalarCardHeader,
   ScalarCardSection,
 } from '@scalar/components/card'
+import { ScalarScreenReader } from '@scalar/components/screen-reader'
 import type { WorkspaceEventBus } from '@scalar/workspace-store/events'
 import type { TraversedTag } from '@scalar/workspace-store/schemas/navigation'
 import { computed } from 'vue'
 
-import ScreenReader from '@/components/ScreenReader.vue'
 import { useLocalization } from '@/features/localization'
 
 import OperationsListItem from './OperationsListItem.vue'
@@ -32,7 +32,7 @@ const operationsAndWebhooks = computed(() => {
   <template v-if="tag.children && tag.children?.length > 0">
     <ScalarCard class="endpoints-card">
       <ScalarCardHeader muted>
-        <ScreenReader>{{ tag.title }}</ScreenReader>
+        <ScalarScreenReader>{{ tag.title }}</ScalarScreenReader>
         {{
           tag.isWebhooks
             ? translate('navigation.webhooks')

@@ -4,14 +4,12 @@ import type { SchemaObject } from '@scalar/workspace-store/schemas/v3.1/strict/o
 import { isArraySchema } from '@scalar/workspace-store/schemas/v3.1/strict/type-guards'
 import { computed } from 'vue'
 
-import { isTypeObject } from '@/components/Content/Schema/helpers/is-type-object'
-import { useLocalization } from '@/features/localization'
+import { isTypeObject } from './helpers/is-type-object'
 
 const { value } = defineProps<{
   value: SchemaObject
   name?: string
 }>()
-const { translate } = useLocalization()
 
 /** Generate a failsafe type from the properties when we don't have one */
 const failsafeType = computed(() => {
@@ -46,7 +44,7 @@ const failsafeType = computed(() => {
           ? value.type
           : 'type' in value && Array.isArray(value.type)
             ? value.type.join(' | ')
-            : translate('schema.unknownType')
+            : 'unknown type'
       ">
       <template v-if="isTypeObject(value)"> {} </template>
       <template v-if="isArraySchema(value)"> [] </template>
@@ -54,8 +52,8 @@ const failsafeType = computed(() => {
     </span>
     <template v-if="name">
       <ScalarWrappingText
-        preset="property"
-        :text="name" />
+        :text="name"
+        preset="property" />
     </template>
     <template v-else>
       {{ failsafeType }}

@@ -4,10 +4,8 @@ import { isObject } from '@scalar/helpers/object/is-object'
 import { useClipboard } from '@scalar/use-hooks/useClipboard'
 import { computed } from 'vue'
 
-import LinkButton from '@/components/Content/Schema/LinkButton.vue'
-import { useLocalization } from '@/features/localization'
-
 import { formatExample } from './helpers/format-example'
+import LinkButton from './LinkButton.vue'
 
 const { examples, example } = defineProps<{
   examples?: unknown
@@ -15,7 +13,6 @@ const { examples, example } = defineProps<{
 }>()
 
 const { copyToClipboard } = useClipboard()
-const { translate } = useLocalization()
 
 // `null` is a meaningful example value for nullable schemas, so only treat
 // `undefined` as "not provided".
@@ -34,9 +31,7 @@ const hasMultipleExamples = computed(
 )
 
 const multipleExamplesLabel = computed(() =>
-  Object.keys(normalizedExamples.value).length === 1
-    ? translate('schema.example')
-    : translate('schema.examples'),
+  Object.keys(normalizedExamples.value).length === 1 ? 'Example' : 'Examples',
 )
 
 /**
@@ -59,9 +54,7 @@ function unwrapExampleObject(value: unknown): unknown {
   <!-- single example (deprecated) -->
   <template v-if="hasSingleExample">
     <div class="property-example">
-      <LinkButton class="decoration-dotted">
-        {{ translate('schema.example') }}
-      </LinkButton>
+      <LinkButton class="decoration-dotted">Example</LinkButton>
       <div class="property-example-value-list">
         <button
           class="property-example-value group"
@@ -104,7 +97,7 @@ function unwrapExampleObject(value: unknown): unknown {
 </template>
 
 <style scoped>
-@reference "../../../style.css";
+@reference "../style.css";
 
 .property-example {
   display: flex;

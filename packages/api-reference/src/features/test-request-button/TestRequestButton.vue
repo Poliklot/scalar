@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { ScalarScreenReader } from '@scalar/components/screen-reader'
 import type { HttpMethod } from '@scalar/helpers/http/http-methods'
 import { ScalarIconPlay } from '@scalar/icons'
 import type { WorkspaceEventBus } from '@scalar/workspace-store/events'
 
-import ScreenReader from '@/components/ScreenReader.vue'
 import { useLocalization } from '@/features/localization'
 
 const {
@@ -48,7 +48,7 @@ const handleClick = () => {
       class="size-3"
       weight="fill" />
     <span>{{ translate('operation.testRequest') }}</span>
-    <ScreenReader>({{ method }} {{ path }})</ScreenReader>
+    <ScalarScreenReader>({{ method }} {{ path }})</ScalarScreenReader>
   </button>
 </template>
 <style scoped>

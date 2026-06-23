@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { ScalarBadge } from '@scalar/components/badge'
+import { ScalarScreenReader } from '@scalar/components/screen-reader'
 import { isDefined } from '@scalar/helpers/array/is-defined'
 import type { WorkspaceEventBus } from '@scalar/workspace-store/events'
 import { resolve } from '@scalar/workspace-store/resolve'
@@ -10,13 +12,9 @@ import {
 } from '@scalar/workspace-store/schemas/v3.1/strict/type-guards'
 import { computed, toRef } from 'vue'
 
-import { Badge } from '@/components/Badge'
-import LinkButton from '@/components/Content/Schema/LinkButton.vue'
-import ScreenReader from '@/components/ScreenReader.vue'
-import { useLocalization } from '@/features/localization'
-
 import { getSchemaType } from './helpers/get-schema-type'
 import { getModelNameFromSchema } from './helpers/schema-name'
+import LinkButton from './LinkButton.vue'
 import RenderString from './RenderString.vue'
 import SchemaPropertyDefault from './SchemaPropertyDefault.vue'
 import SchemaPropertyDetail from './SchemaPropertyDetail.vue'
@@ -45,7 +43,6 @@ const props = withDefaults(
     eventBus: null,
   },
 )
-const { translate } = useLocalization()
 
 // Convert to reactive refs for composables
 const valueRef = toRef(props, 'value')
@@ -104,7 +101,7 @@ const validationProperties = computed(() => {
     if (schema.uniqueItems) {
       properties.push({
         key: 'unique-items',
-        value: `${translate('common.unique')}!`,
+        value: 'unique!',
       })
     }
   }
@@ -114,7 +111,7 @@ const validationProperties = computed(() => {
     if (schema.minLength) {
       properties.push({
         key: 'min-length',
-        prefix: `${translate('common.minLength')}: `,
+        prefix: 'min length: ',
         value: schema.minLength,
       })
     }
@@ -122,7 +119,7 @@ const validationProperties = computed(() => {
     if (schema.maxLength) {
       properties.push({
         key: 'max-length',
-        prefix: `${translate('common.maxLength')}: `,
+        prefix: 'max length: ',
         value: schema.maxLength,
       })
     }
@@ -154,7 +151,7 @@ const validationProperties = computed(() => {
     if (isDefined(schema.exclusiveMinimum)) {
       properties.push({
         key: 'exclusive-minimum',
-        prefix: `${translate('common.greaterThan')}: `,
+        prefix: 'greater than: ',
         value: schema.exclusiveMinimum,
       })
     }
@@ -162,7 +159,7 @@ const validationProperties = computed(() => {
     if (isDefined(schema.minimum)) {
       properties.push({
         key: 'minimum',
-        prefix: `${translate('common.min')}: `,
+        prefix: 'min: ',
         value: schema.minimum,
       })
     }
@@ -170,7 +167,7 @@ const validationProperties = computed(() => {
     if (isDefined(schema.exclusiveMaximum)) {
       properties.push({
         key: 'exclusive-maximum',
-        prefix: `${translate('common.lessThan')}: `,
+        prefix: 'less than: ',
         value: schema.exclusiveMaximum,
       })
     }
@@ -178,7 +175,7 @@ const validationProperties = computed(() => {
     if (isDefined(schema.maximum)) {
       properties.push({
         key: 'maximum',
-        prefix: `${translate('common.max')}: `,
+        prefix: 'max: ',
         value: schema.maximum,
       })
     }
@@ -186,7 +183,7 @@ const validationProperties = computed(() => {
     if (isDefined(schema.multipleOf)) {
       properties.push({
         key: 'multiple-of',
-        prefix: `${translate('common.multipleOf')}: `,
+        prefix: 'multiple of: ',
         value: schema.multipleOf,
       })
     }
@@ -303,16 +300,15 @@ const exampleValue = computed(() => {
     <div
       v-if="props.isDiscriminator"
       class="property-discriminator">
-      {{ translate('common.discriminator') }}
+      Discriminator
     </div>
     <template v-if="props.value">
       <!-- Type information -->
       <SchemaPropertyDetail
         v-if="shouldShowType"
         truncate>
-        <ScreenReader>{{ translate('common.type') }}:</ScreenReader>
-        {{ displayType }}
-        <template v-if="modelLink">
+        <ScalarScreenReader>Type: </ScalarScreenReader>{{ displayType
+        }}<template v-if="modelLink">
           ·
           <LinkButton
             v-if="props.eventBus && modelLink.schemaKey"
@@ -331,7 +327,7 @@ const exampleValue = computed(() => {
       <SchemaPropertyDetail
         v-if="propertyNamesDetail"
         truncate>
-        <template #prefix>{{ translate('common.keys') }}:</template>
+        <template #prefix>keys:</template>
         {{ propertyNamesDetail }}
       </SchemaPropertyDetail>
 
@@ -341,12 +337,12 @@ const exampleValue = computed(() => {
         :key="property.key"
         :code="property.code"
         :truncate="property.truncate">
-        <ScreenReader v-if="property.key === 'format'">
-          {{ translate('common.format') }}:
-        </ScreenReader>
-        <ScreenReader v-else-if="property.key === 'pattern'">
-          {{ translate('common.pattern') }}:
-        </ScreenReader>
+        <ScalarScreenReader v-if="property.key === 'format'"
+          >Format:</ScalarScreenReader
+        >
+        <ScalarScreenReader v-else-if="property.key === 'pattern'">
+          Pattern:
+        </ScalarScreenReader>
         <template
           v-if="property.prefix"
           #prefix>
@@ -356,9 +352,7 @@ const exampleValue = computed(() => {
       </SchemaPropertyDetail>
 
       <!-- Enum indicator -->
-      <SchemaPropertyDetail v-if="props.enum">
-        {{ translate('common.enum') }}
-      </SchemaPropertyDetail>
+      <SchemaPropertyDetail v-if="props.enum">enum</SchemaPropertyDetail>
     </template>
     <div
       v-if="props.additional"
@@ -366,42 +360,42 @@ const exampleValue = computed(() => {
       <template v-if="props.value?.['x-additionalPropertiesName']">
         {{ props.value['x-additionalPropertiesName'] }}
       </template>
-      <template v-else>{{ translate('common.additionalProperties') }}</template>
+      <template v-else>additional properties</template>
     </div>
     <div
       v-if="props.value?.deprecated"
       class="property-deprecated">
-      <Badge>{{ translate('common.deprecated') }}</Badge>
+      <ScalarBadge>deprecated</ScalarBadge>
     </div>
     <!-- Don't use `isDefined` here, we want to show `const` when the value is `null` -->
     <div
       v-if="constValue !== undefined"
       class="property-const">
       <SchemaPropertyDetail truncate>
-        <template #prefix>{{ translate('common.const') }}: </template>
+        <template #prefix>const: </template>
         <RenderString :value="constValue" />
       </SchemaPropertyDetail>
     </div>
     <template v-else>
       <!-- Shows only when a composition is used (so props.value?.type is undefined) -->
       <SchemaPropertyDetail v-if="(props.value as any)?.nullable === true">
-        {{ translate('common.nullable') }}
+        nullable
       </SchemaPropertyDetail>
     </template>
     <div
       v-if="props.value?.writeOnly"
       class="property-write-only">
-      {{ translate('common.writeOnly') }}
+      write-only
     </div>
     <div
       v-else-if="props.value?.readOnly"
       class="property-read-only">
-      {{ translate('common.readOnly') }}
+      read-only
     </div>
     <div
       v-if="props.required"
       class="property-required">
-      {{ translate('common.required') }}
+      required
     </div>
     <SchemaPropertyDefault :value="props.value?.default" />
     <SchemaPropertyExamples

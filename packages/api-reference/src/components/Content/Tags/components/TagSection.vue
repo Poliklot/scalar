@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ScalarMarkdown } from '@scalar/components/markdown'
+import { ScalarScreenReader } from '@scalar/components/screen-reader'
 import type { WorkspaceEventBus } from '@scalar/workspace-store/events'
 import type { TraversedTag } from '@scalar/workspace-store/schemas/navigation'
 
 import { Anchor } from '@/components/Anchor'
 import { OperationsList } from '@/components/OperationsList'
-import ScreenReader from '@/components/ScreenReader.vue'
 import {
   Section,
   SectionColumn,
@@ -42,9 +42,9 @@ const { translate } = useLocalization()
           :id="headerId"
           :level="2">
           {{ tag.title }}
-          <ScreenReader v-if="isCollapsed">
+          <ScalarScreenReader v-if="isCollapsed">
             ({{ translate('navigation.collapsed') }})
-          </ScreenReader>
+          </ScalarScreenReader>
         </SectionHeaderTag>
       </Anchor>
     </SectionHeader>
