@@ -1,14 +1,22 @@
 <script setup lang="ts">
 import type { ApiReferenceConfigurationRaw } from '@scalar/types/api-reference'
 import type { WorkspaceEventBus } from '@scalar/workspace-store/events'
+import {
+  pushDynamicScope,
+  resolveDynamicSchema,
+} from '@scalar/workspace-store/helpers/dynamic-ref'
 import { resolve } from '@scalar/workspace-store/resolve'
 import type {
   OpenApiDocument,
   SchemaObject,
 } from '@scalar/workspace-store/schemas/v3.1/strict/openapi-document'
-import { computed } from 'vue'
+import { computed, provide } from 'vue'
 
 import { Anchor } from '@/components/Anchor'
+import {
+  SCHEMA_DYNAMIC_SCOPE_SYMBOL,
+  useDynamicScope,
+} from '@/components/Content/Schema/helpers/dynamic-scope'
 import { SectionAccordion, SectionHeaderTag } from '@/components/Section'
 
 import { SchemaHeading, SchemaProperty } from '../../Schema'
@@ -31,6 +39,21 @@ const { eventBus, id, options, document, schema } = defineProps<{
 }>()
 
 /**
+ * The dynamic scope inherited from ancestor schema resources (empty for a top-level model). Used to
+ * bind a top-level `$dynamicRef` and to seed the scope re-provided to descendants. See
+ * {@link useDynamicScope}.
+ */
+const dynamicScope = useDynamicScope()
+
+/**
+ * This model's schema with a top-level `$dynamicRef` bound to its concrete type (a no-op for ordinary
+ * schemas). Shared by the rendered schema and the scope re-provided below, mirroring `Schema.vue`.
+ */
+const boundSchema = computed(
+  (): SchemaObject => resolveDynamicSchema(schema, dynamicScope),
+)
+
+/**
  * The schema this model renders.
  *
  * A resource that extends a template through a root `$ref` (a `$ref` alongside sibling keywords like
@@ -38,8 +61,24 @@ const { eventBus, id, options, document, schema } = defineProps<{
  * it to list the inherited fields instead of rendering a bare reference. A no-op for ordinary
  * schemas. Mirrors the root `$ref` merge in `Schema.vue` used by the modern layout.
  */
-const resolvedSchema = computed(
-  (): SchemaObject => ('$ref' in schema ? resolve.schema(schema) : schema),
+const resolvedSchema = computed((): SchemaObject => {
+  const bound = boundSchema.value
+  return '$ref' in bound ? resolve.schema(bound) : bound
+})
+
+/**
+ * Re-provide the dynamic scope grown with this model's resource so its nested `$dynamicRef`s (e.g. a
+ * `PaginatedResponse.items` array bound to `User`) resolve, matching the modern layout. The classic
+ * layout renders properties through `SchemaProperty` directly rather than `Schema.vue`, so without
+ * this the binding `$id` / `$defs` would never enter the scope and the items would stay unbound.
+ *
+ * The raw bound schema is pushed, not the merged {@link resolvedSchema}: merging through
+ * `resolve.schema` drops the resolved `$ref-value` from `$defs` entries that `$dynamicAnchor`
+ * resolution relies on to dereference the bound type.
+ */
+provide(
+  SCHEMA_DYNAMIC_SCOPE_SYMBOL,
+  pushDynamicScope(dynamicScope, boundSchema.value),
 )
 </script>
 <template>
