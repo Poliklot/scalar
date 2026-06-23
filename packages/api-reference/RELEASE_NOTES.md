@@ -9,6 +9,19 @@
   on every release - edits made directly here will be overwritten.
 -->
 
+## 1.62.0 (2026-06-23)
+
+### Custom info links, synced examples, and better schema rendering
+
+This release adds the x-scalar-links extension to display legal or policy links in your introduction, syncs example selections across all operations, and surfaces key constraints for object maps.
+
+- Added x-scalar-links extension to render custom named links (like privacy policy or imprint) alongside contact, license, and terms of service in the introduction
+- Example pickers now sync across operations. Selecting a request or response example with the same key on one endpoint selects it everywhere
+- Schema docs for additionalProperties maps now show propertyNames type and format (for example, keys: string · uuid) so key constraints are visible
+- Fixed missing divider between contact email and URL in the introduction
+
+[Read full release notes](https://github.com/scalar/scalar/blob/main/packages/api-reference/CHANGELOG.md#1620)
+
 ## 1.61.0 (2026-06-22)
 
 ### AsyncAPI operations, messages, and protocols now render inline

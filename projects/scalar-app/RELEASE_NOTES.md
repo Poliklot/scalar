@@ -9,6 +9,18 @@
   on every release - edits made directly here will be overwritten.
 -->
 
+## 1.1.11 (2026-06-23)
+
+### Example pickers now stay in sync across operations
+
+When you select a request or response example on one operation, the API client now automatically selects the same example on every other operation that defines it. Operations without a matching example keep their current selection.
+
+- Request and response example pickers now sync across operations, just like the language selector already does.
+- Selecting an example by name (for instance, "Use case 1") applies it everywhere that example is defined.
+- Operations that do not have the selected example keep their current choice instead of clearing.
+
+[Read full release notes](https://github.com/scalar/scalar/blob/main/projects/scalar-app/CHANGELOG.md#1111)
+
 ## 1.1.10 (2026-06-22)
 
 ### Request signing, auth token fixes, and parameter editing improvements
