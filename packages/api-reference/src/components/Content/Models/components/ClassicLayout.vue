@@ -6,13 +6,14 @@ import type {
   OpenApiDocument,
   SchemaObject,
 } from '@scalar/workspace-store/schemas/v3.1/strict/openapi-document'
+import { computed } from 'vue'
 
 import { Anchor } from '@/components/Anchor'
 import { SectionAccordion, SectionHeaderTag } from '@/components/Section'
 
 import { SchemaHeading, SchemaProperty } from '../../Schema'
 
-const { eventBus, id, options, document } = defineProps<{
+const { eventBus, id, options, document, schema } = defineProps<{
   id: string
   name: string
   schema: SchemaObject
@@ -28,10 +29,22 @@ const { eventBus, id, options, document } = defineProps<{
     | 'hideModels'
   >
 }>()
+
+/**
+ * The schema this model renders.
+ *
+ * A resource that extends a template through a root `$ref` (a `$ref` alongside sibling keywords like
+ * `$defs`, e.g. a `PaginatedResponse` binding) keeps its properties behind the reference, so merge
+ * it to list the inherited fields instead of rendering a bare reference. A no-op for ordinary
+ * schemas. Mirrors the root `$ref` merge in `Schema.vue` used by the modern layout.
+ */
+const resolvedSchema = computed(
+  (): SchemaObject => ('$ref' in schema ? resolve.schema(schema) : schema),
+)
 </script>
 <template>
   <SectionAccordion
-    :aria-label="schema.title ?? name"
+    :aria-label="resolvedSchema.title ?? name"
     :modelValue="!isCollapsed"
     @update:modelValue="
       (value) => eventBus?.emit('toggle:nav-item', { id, open: value })
@@ -44,23 +57,25 @@ const { eventBus, id, options, document } = defineProps<{
         <SectionHeaderTag :level="3">
           <SchemaHeading
             class="reference-models-label"
-            :name="schema.title ?? name"
-            :value="schema" />
+            :name="resolvedSchema.title ?? name"
+            :value="resolvedSchema" />
         </SectionHeaderTag>
       </Anchor>
     </template>
     <!-- Schema -->
     <div
-      v-if="'properties' in schema"
+      v-if="'properties' in resolvedSchema"
       class="properties">
       <SchemaProperty
-        v-for="[property, value] in Object.entries(schema.properties ?? {})"
+        v-for="[property, value] in Object.entries(
+          resolvedSchema.properties ?? {},
+        )"
         :key="property"
         :eventBus="eventBus"
         :hideModelNames="options.hideModels"
         :name="property"
         :options="{ ...options, document }"
-        :required="schema.required?.includes(property)"
+        :required="resolvedSchema.required?.includes(property)"
         :schema="resolve.schema(value)" />
     </div>
     <div v-else>
@@ -68,7 +83,7 @@ const { eventBus, id, options, document } = defineProps<{
         :eventBus="eventBus"
         :hideModelNames="options.hideModels"
         :options="{ ...options, document }"
-        :schema="schema" />
+        :schema="resolvedSchema" />
     </div>
   </SectionAccordion>
 </template>
