@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 
 import SchemaPropertyHeading from './SchemaPropertyHeading.vue'
+import { defaultSchemaTranslate } from './translations'
 
 describe('SchemaPropertyHeading', () => {
   it('renders falsy default values', () => {
@@ -32,6 +33,21 @@ describe('SchemaPropertyHeading', () => {
     const requiredElement = wrapper.find('.property-required')
     expect(requiredElement.exists()).toBe(true)
     expect(requiredElement.text()).toBe('required')
+  })
+
+  it('uses an explicit translate option for schema labels', () => {
+    const wrapper = mount(SchemaPropertyHeading, {
+      // @ts-expect-error - not really sure what this is testing
+      props: {
+        required: true,
+        options: {
+          translate: (key, params) => (key === 'common.required' ? 'obligatorio' : defaultSchemaTranslate(key, params)),
+        },
+      },
+    })
+
+    const requiredElement = wrapper.find('.property-required')
+    expect(requiredElement.text()).toBe('obligatorio')
   })
 
   it('renders property type and format', () => {

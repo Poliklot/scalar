@@ -5,27 +5,36 @@ import { isArraySchema } from '@scalar/workspace-store/schemas/v3.1/strict/type-
 import { computed } from 'vue'
 
 import { isTypeObject } from './helpers/is-type-object'
+import { getSchemaTranslate, type SchemaTranslationKey } from './translations'
+import type { SchemaOptions } from './types'
 
-const { value } = defineProps<{
+const props = defineProps<{
   value: SchemaObject
   name?: string
+  options?: SchemaOptions
 }>()
+
+const translate = (key: SchemaTranslationKey): string =>
+  getSchemaTranslate(props.options?.translate)(key)
 
 /** Generate a failsafe type from the properties when we don't have one */
 const failsafeType = computed(() => {
-  if ('type' in value) {
-    return value.type
+  if ('type' in props.value) {
+    return props.value.type
   }
 
-  if (value.enum) {
+  if (props.value.enum) {
     return 'enum'
   }
 
-  if (isArraySchema(value) && value.items) {
+  if (isArraySchema(props.value) && props.value.items) {
     return 'array'
   }
 
-  if (isTypeObject(value) && (value.properties || value.additionalProperties)) {
+  if (
+    isTypeObject(props.value) &&
+    (props.value.properties || props.value.additionalProperties)
+  ) {
     return 'object'
   }
 
@@ -35,25 +44,25 @@ const failsafeType = computed(() => {
 
 <template>
   <span
-    v-if="typeof value === 'object'"
+    v-if="typeof props.value === 'object'"
     class="schema-type">
     <span
       class="schema-type-icon"
       :title="
-        'type' in value && typeof value.type === 'string'
-          ? value.type
-          : 'type' in value && Array.isArray(value.type)
-            ? value.type.join(' | ')
-            : 'unknown type'
+        'type' in props.value && typeof props.value.type === 'string'
+          ? props.value.type
+          : 'type' in props.value && Array.isArray(props.value.type)
+            ? props.value.type.join(' | ')
+            : translate('schema.unknownType')
       ">
-      <template v-if="isTypeObject(value)"> {} </template>
-      <template v-if="isArraySchema(value)"> [] </template>
-      <template v-if="value.enum"> enum </template>
+      <template v-if="isTypeObject(props.value)"> {} </template>
+      <template v-if="isArraySchema(props.value)"> [] </template>
+      <template v-if="props.value.enum"> enum </template>
     </span>
-    <template v-if="name">
+    <template v-if="props.name">
       <ScalarWrappingText
-        :text="name"
-        preset="property" />
+        preset="property"
+        :text="props.name" />
     </template>
     <template v-else>
       {{ failsafeType }}

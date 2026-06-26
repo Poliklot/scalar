@@ -9,6 +9,7 @@ import { computed, ref, useId, useTemplateRef, watch } from 'vue'
 
 import { Anchor } from '@/components/Anchor'
 import { SectionAccordion, SectionHeaderTag } from '@/components/Section'
+import { useLocalization } from '@/features/localization'
 import {
   getAsyncApiMessageHeadersSchema,
   getAsyncApiMessagePayloadSchema,
@@ -44,6 +45,7 @@ const {
   /** Map of navigation item id to expanded state, shared with the sidebar. */
   expandedItems?: Record<string, boolean>
 }>()
+const { translate } = useLocalization()
 
 const headerId = useId()
 const section = useTemplateRef<HTMLElement>('section')
@@ -118,6 +120,7 @@ const headersSchema = computed(() =>
 const schemaOptions = computed<SchemaOptions>(() => ({
   hideReadOnly: false,
   ...resolveSchemaRenderOptions(options),
+  translate,
 }))
 
 /**

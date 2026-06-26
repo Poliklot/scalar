@@ -7,6 +7,8 @@ import type {
   OpenApiDocument,
 } from '@scalar/workspace-store/schemas/v3.1/strict/openapi-document'
 
+import { useLocalization } from '@/features/localization'
+
 const {
   name,
   header,
@@ -26,6 +28,7 @@ const {
   orderRequiredPropertiesFirst: boolean | undefined
   expandAllSchemaProperties: boolean | undefined
 }>()
+const { translate } = useLocalization()
 </script>
 <template>
   <SchemaProperty
@@ -39,6 +42,7 @@ const {
       orderSchemaPropertiesBy: orderSchemaPropertiesBy,
       expandAllSchemaProperties: expandAllSchemaProperties,
       document,
+      translate,
     }"
     :schema="getResolvedRef(header.schema)" />
 </template>

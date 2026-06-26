@@ -6,6 +6,7 @@ import type { SchemaObject } from '@scalar/workspace-store/schemas/v3.1/strict/o
 import { computed, createApp, h, reactive } from 'vue'
 
 import Schema from './Schema.vue'
+import type { SchemaTranslate } from './translations'
 import type { SchemaOptions } from './types'
 
 export type CreateSchemaOptions = {
@@ -41,6 +42,8 @@ export type CreateSchemaOptions = {
   noncollapsible?: boolean
   /** Display options forwarded to the schema tree. */
   options?: SchemaOptions
+  /** Translate schema UI labels when mounting the block standalone. */
+  translate?: SchemaTranslate
   /**
    * Force a color mode on the rendered block.
    *
@@ -138,6 +141,7 @@ export const createSchema = (el: HTMLElement | string, options: CreateSchemaOpti
   const resolvedOptions = computed<SchemaOptions>(() => ({
     document: currentContext()?.document,
     ...options.options,
+    translate: options.options?.translate ?? options.translate,
   }))
 
   // Props are getters so the block tracks the reactive store (active document)

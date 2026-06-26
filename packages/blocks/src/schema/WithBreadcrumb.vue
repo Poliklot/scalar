@@ -3,17 +3,18 @@ import { ScalarIconLink } from '@scalar/icons'
 import type { WorkspaceEventBus } from '@scalar/workspace-store/events'
 import { computed } from 'vue'
 
-import { useLocalization } from '@/features/localization'
+import { getSchemaTranslate } from './translations'
+import type { SchemaOptions } from './types'
 
-const { breadcrumb } = defineProps<{
+const { breadcrumb, options } = defineProps<{
   breadcrumb?: string[]
   eventBus: WorkspaceEventBus | null
+  options?: SchemaOptions
 }>()
-const { translate } = useLocalization()
 
 /** Screen-reader label for the copy-link button, naming the deep-linked item. */
 const copyLinkLabel = computed(() =>
-  translate('actions.copyLinkTo', {
+  getSchemaTranslate(options?.translate)('actions.copyLinkTo', {
     name: breadcrumb?.[breadcrumb.length - 1] ?? '',
   }),
 )

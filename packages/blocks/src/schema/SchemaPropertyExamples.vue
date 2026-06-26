@@ -6,21 +6,27 @@ import { computed } from 'vue'
 
 import { formatExample } from './helpers/format-example'
 import LinkButton from './LinkButton.vue'
+import { getSchemaTranslate, type SchemaTranslationKey } from './translations'
+import type { SchemaOptions } from './types'
 
-const { examples, example } = defineProps<{
+const props = defineProps<{
   examples?: unknown
   example?: unknown
+  options?: SchemaOptions
 }>()
+
+const translate = (key: SchemaTranslationKey): string =>
+  getSchemaTranslate(props.options?.translate)(key)
 
 const { copyToClipboard } = useClipboard()
 
 // `null` is a meaningful example value for nullable schemas, so only treat
 // `undefined` as "not provided".
-const hasSingleExample = computed(() => example !== undefined)
+const hasSingleExample = computed(() => props.example !== undefined)
 
 const normalizedExamples = computed<Record<string, unknown>>(() => {
-  if (examples && typeof examples === 'object') {
-    return examples as Record<string, unknown>
+  if (props.examples && typeof props.examples === 'object') {
+    return props.examples as Record<string, unknown>
   }
 
   return {}
@@ -31,7 +37,9 @@ const hasMultipleExamples = computed(
 )
 
 const multipleExamplesLabel = computed(() =>
-  Object.keys(normalizedExamples.value).length === 1 ? 'Example' : 'Examples',
+  Object.keys(normalizedExamples.value).length === 1
+    ? translate('schema.example')
+    : translate('schema.examples'),
 )
 
 /**
@@ -54,14 +62,16 @@ function unwrapExampleObject(value: unknown): unknown {
   <!-- single example (deprecated) -->
   <template v-if="hasSingleExample">
     <div class="property-example">
-      <LinkButton class="decoration-dotted">Example</LinkButton>
+      <LinkButton class="decoration-dotted">
+        {{ translate('schema.example') }}
+      </LinkButton>
       <div class="property-example-value-list">
         <button
           class="property-example-value group"
           type="button"
-          @click="copyToClipboard(formatExample(example))">
+          @click="copyToClipboard(formatExample(props.example))">
           <span>
-            {{ formatExample(example) }}
+            {{ formatExample(props.example) }}
           </span>
           <ScalarIcon
             class="group-hover:text-c-1 text-c-3 ml-auto min-h-3 min-w-3"

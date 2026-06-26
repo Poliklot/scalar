@@ -18,6 +18,7 @@ import { SCHEMA_SCROLL_TARGET_SYMBOL } from './injection-keys'
 import SchemaHeading from './SchemaHeading.vue'
 import SchemaObjectProperties from './SchemaObjectProperties.vue'
 import SchemaProperty from './SchemaProperty.vue'
+import { getSchemaTranslate, type SchemaTranslationKey } from './translations'
 import type { SchemaOptions } from './types'
 
 const {
@@ -104,6 +105,15 @@ if (cycleKey != null) {
 }
 provide(SCHEMA_ANCESTORS_SYMBOL, childAncestors)
 
+const translate = (
+  key: SchemaTranslationKey,
+  params?: Record<string, number | string>,
+): string => getSchemaTranslate(options.translate)(key, params)
+
+const childAttributesLabel = computed(
+  (): string => schema?.title ?? translate('schema.childAttributes'),
+)
+
 const shouldForceExpand = computed(
   (): boolean => !!options.expandAllSchemaProperties && !isCyclic.value,
 )
@@ -158,7 +168,11 @@ const schemaDescription = computed(() => {
   // member win, matching how the merged composition is rendered below. The nested
   // merged Schema in `SchemaComposition` hides its own description in this case so
   // the text is not rendered twice.
-  if (schema?.allOf && schema.allOf.length > 0 && name === 'Request Body') {
+  if (
+    schema?.allOf &&
+    schema.allOf.length > 0 &&
+    schemaContext === 'requestBody'
+  ) {
     return mergeAllOfSchemas(schema)?.description || null
   }
 
@@ -213,7 +227,7 @@ const handleClick = (e: MouseEvent) => {
       <div
         v-if="isEmptySchemaObject(schema)"
         class="pt-2">
-        Empty object
+        {{ translate('schema.emptyObject') }}
       </div>
       <div
         class="schema-properties"
@@ -233,8 +247,10 @@ const handleClick = (e: MouseEvent) => {
               class="schema-card-title-icon"
               icon="Add"
               size="sm" />
-            Show additional properties
-            <ScalarScreenReader v-if="name">for {{ name }}</ScalarScreenReader>
+            {{ translate('schema.showAdditionalProperties') }}
+            <ScalarScreenReader v-if="name">
+              {{ translate('schema.forName', { name }) }}
+            </ScalarScreenReader>
           </DisclosureButton>
         </div>
 
@@ -255,12 +271,22 @@ const handleClick = (e: MouseEvent) => {
               icon="Add"
               size="sm" />
             <template v-if="open">
-              Hide {{ schema?.title ?? 'Child Attributes' }}
+              {{
+                translate('schema.hideChildAttributes', {
+                  name: childAttributesLabel,
+                })
+              }}
             </template>
             <template v-else>
-              Show {{ schema?.title ?? 'Child Attributes' }}
+              {{
+                translate('schema.showChildAttributes', {
+                  name: childAttributesLabel,
+                })
+              }}
             </template>
-            <ScalarScreenReader v-if="name">for {{ name }}</ScalarScreenReader>
+            <ScalarScreenReader v-if="name">
+              {{ translate('schema.forName', { name }) }}
+            </ScalarScreenReader>
           </template>
           <template v-else>
             <ScalarIcon
@@ -270,6 +296,7 @@ const handleClick = (e: MouseEvent) => {
               size="sm" />
             <SchemaHeading
               :name="schema?.title ?? name"
+              :options
               :value="schema" />
           </template>
         </DisclosureButton>

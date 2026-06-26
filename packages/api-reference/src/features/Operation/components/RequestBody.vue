@@ -189,6 +189,7 @@ const shouldRenderRequestBody = computed(
           orderSchemaPropertiesBy: options.orderSchemaPropertiesBy,
           expandAllSchemaProperties: options.expandAllSchemaProperties,
           document,
+          translate,
         }"
         :schema="partitionedSchema.visibleProperties"
         schemaContext="requestBody" />
@@ -207,6 +208,7 @@ const shouldRenderRequestBody = computed(
           orderSchemaPropertiesBy: options.orderSchemaPropertiesBy,
           expandAllSchemaProperties: options.expandAllSchemaProperties,
           document,
+          translate,
         }"
         :schema="partitionedSchema.collapsedProperties"
         schemaContext="requestBody" />
@@ -230,6 +232,7 @@ const shouldRenderRequestBody = computed(
           orderSchemaPropertiesBy: options.orderSchemaPropertiesBy,
           expandAllSchemaProperties: options.expandAllSchemaProperties,
           document,
+          translate,
         }"
         :schema="schema"
         schemaContext="requestBody" />

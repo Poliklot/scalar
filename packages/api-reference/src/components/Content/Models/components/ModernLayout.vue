@@ -8,6 +8,7 @@ import type {
 } from '@scalar/workspace-store/schemas/v3.1/strict/openapi-document'
 
 import { CompactSection, SectionHeaderTag } from '@/components/Section'
+import { useLocalization } from '@/features/localization'
 
 const { schema, options, document } = defineProps<{
   id: string
@@ -24,6 +25,7 @@ const { schema, options, document } = defineProps<{
     expandAllSchemaProperties: boolean | undefined
   }
 }>()
+const { translate } = useLocalization()
 </script>
 <template>
   <CompactSection
@@ -39,6 +41,7 @@ const { schema, options, document } = defineProps<{
       <SectionHeaderTag :level="3">
         <SchemaHeading
           :name="schema.title ?? name"
+          :options="{ ...options, document, translate }"
           :value="schema" />
       </SectionHeaderTag>
     </template>
@@ -49,7 +52,7 @@ const { schema, options, document } = defineProps<{
         hideHeading
         :level="1"
         noncollapsible
-        :options="{ ...options, document }"
+        :options="{ ...options, document, translate }"
         :schema="schema" />
     </ScalarErrorBoundary>
   </CompactSection>

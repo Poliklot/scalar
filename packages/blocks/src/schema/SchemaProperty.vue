@@ -27,16 +27,6 @@ import SchemaPropertyHeading from './SchemaPropertyHeading.vue'
 import type { SchemaOptions } from './types'
 import WithBreadcrumb from './WithBreadcrumb.vue'
 
-/**
- * Note: We're taking in a prop called `value` which should be a JSON Schema.
- *
- * We're using `optimizeValueForDisplay` to merge null types in compositions (anyOf, allOf, oneOf, not).
- * So you should basically use the optimizedValue everywhere in the component.
- */
-
-/** Composition keywords that hold a list of schemas and can be flattened when they contain a single member. */
-const SINGLE_ITEM_COMPOSITIONS = ['oneOf', 'anyOf', 'allOf'] as const
-
 const props = withDefaults(
   defineProps<{
     is?: string | Component
@@ -76,6 +66,16 @@ const props = withDefaults(
     hideModelNames: false,
   },
 )
+
+/**
+ * Note: We're taking in a prop called `value` which should be a JSON Schema.
+ *
+ * We're using `optimizeValueForDisplay` to merge null types in compositions (anyOf, allOf, oneOf, not).
+ * So you should basically use the optimizedValue everywhere in the component.
+ */
+
+/** Composition keywords that hold a list of schemas and can be flattened when they contain a single member. */
+const SINGLE_ITEM_COMPOSITIONS = ['oneOf', 'anyOf', 'allOf'] as const
 
 /** Simplified composition with `null` type. */
 /**
@@ -270,6 +270,7 @@ const isDiscriminatorProperty = computed(() =>
       :hideModelNames
       :isDiscriminator="isDiscriminatorProperty"
       :modelName="modelName"
+      :options
       :propertyNames="propertyNamesSchema"
       :required
       :value="optimizedValue">
@@ -278,7 +279,8 @@ const isDiscriminatorProperty = computed(() =>
         #name>
         <WithBreadcrumb
           :breadcrumb="shouldHaveLink ? childBreadcrumb : undefined"
-          :eventBus="eventBus">
+          :eventBus="eventBus"
+          :options="options">
           <span
             v-if="variant === 'patternProperties'"
             class="property-name-pattern-properties">
@@ -299,12 +301,6 @@ const isDiscriminatorProperty = computed(() =>
             :text="name" />
         </WithBreadcrumb>
       </template>
-      <template
-        v-if="optimizedValue?.example !== undefined"
-        #example>
-        Example:
-        {{ optimizedValue.example }}
-      </template>
     </SchemaPropertyHeading>
 
     <!-- Description -->
@@ -318,12 +314,14 @@ const isDiscriminatorProperty = computed(() =>
     <!-- Enum for property names -->
     <SchemaEnums
       v-if="propertyNamesEnum && propertyNamesEnum.length > 0"
+      :options
       propertyNames
       :value="{ enum: propertyNamesEnum } as SchemaObject" />
 
     <!-- Enum values -->
     <SchemaEnums
       v-if="enumValues.length > 0"
+      :options
       :value="optimizedValue" />
 
     <!-- Object -->

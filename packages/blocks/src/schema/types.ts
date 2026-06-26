@@ -1,6 +1,8 @@
 import type { ApiReferenceConfiguration } from '@scalar/types/api-reference'
 import type { OpenApiDocument } from '@scalar/workspace-store/schemas/v3.1/strict/openapi-document'
 
+import type { SchemaTranslate } from './translations'
+
 /**
  * Options for the schema component tree
  *
@@ -24,4 +26,6 @@ export type SchemaOptions = {
    * their component schemas when inferring composition variants.
    */
   document?: OpenApiDocument
+  /** Translate schema UI labels. Defaults to the block's English strings for standalone usage. */
+  translate?: SchemaTranslate
 }

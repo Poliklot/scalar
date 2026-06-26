@@ -23,6 +23,7 @@ import {
   type RequestBodyCompositionSelection,
 } from './injection-keys'
 import Schema from './Schema.vue'
+import { getSchemaTranslate, type SchemaTranslationKey } from './translations'
 import type { SchemaOptions } from './types'
 
 const props = withDefaults(
@@ -60,6 +61,9 @@ const props = withDefaults(
   },
 )
 
+const translate = (key: SchemaTranslationKey): string =>
+  getSchemaTranslate(props.options.translate)(key)
+
 /** The current composition */
 const composition = computed(() =>
   [props.schema[props.composition]]
@@ -78,7 +82,7 @@ const listboxOptions = computed((): ScalarListboxOption[] =>
     const resolved = resolve.schema(schema.original!)
     const label =
       (getModelNameFromSchema(resolved)?.label ?? getSchemaType(resolved)) ||
-      'Schema'
+      translate('schema.schema')
     return { id: String(index), label }
   }),
 )
@@ -137,12 +141,8 @@ watch(
  * Humanize composition keyword name for display.
  * Converts camelCase to Title Case (e.g., oneOf -> One of).
  */
-const humanizeType = (type: CompositionKeyword): string =>
-  type
-    .replace(/([A-Z])/g, ' $1')
-    .replace(/^./, (str) => str.toUpperCase())
-    .toLowerCase()
-    .replace(/^(\w)/, (c) => c.toUpperCase())
+const compositionLabel = (type: CompositionKeyword): string =>
+  translate(`schema.${type}` as SchemaTranslationKey)
 
 /** Inside the currently selected composition */
 const selectedComposition = computed(
@@ -235,18 +235,20 @@ if (
         <button
           class="composition-selector bg-b-1.5 hover:bg-b-2 flex w-full cursor-pointer items-center gap-1 rounded-t-lg border px-2.5 py-2.5 pr-3 text-left"
           type="button">
-          <span class="text-c-2">{{ humanizeType(props.composition) }}</span>
+          <span class="text-c-2">{{
+            compositionLabel(props.composition)
+          }}</span>
           <span
             class="composition-selector-label text-c-1"
             :class="{
               'line-through': selectedComposition?.deprecated,
             }">
-            {{ selectedOption?.label || 'Schema' }}
+            {{ selectedOption?.label || translate('schema.schema') }}
           </span>
           <div
             v-if="selectedComposition?.deprecated"
             class="text-red">
-            deprecated
+            {{ translate('common.deprecated') }}
           </div>
           <ScalarIconCaretDown />
         </button>
@@ -259,7 +261,7 @@ if (
           class="bg-b-1 hover:bg-b-2 text-c-1 flex w-full items-center justify-center gap-2 rounded-b-lg border border-t-0 px-2 py-2 text-sm font-medium transition-colors"
           type="button"
           @click="showNestedSchema = true">
-          Show Schema Details
+          {{ translate('schema.showSchemaDetails') }}
           <ScalarIconCaretDown class="h-3 w-3" />
         </button>
 

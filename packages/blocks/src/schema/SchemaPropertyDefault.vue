@@ -2,19 +2,22 @@
 import { ScalarIcon } from '@scalar/components/icon'
 import { useClipboard } from '@scalar/use-hooks/useClipboard'
 
-import { useLocalization } from '@/features/localization'
-
 import { formatValue } from './helpers/format-value'
+import { getSchemaTranslate, type SchemaTranslationKey } from './translations'
+import type { SchemaOptions } from './types'
 
-defineProps<{
+const props = defineProps<{
   value?: unknown
+  options?: SchemaOptions
 }>()
 
+const translate = (key: SchemaTranslationKey): string =>
+  getSchemaTranslate(props.options?.translate)(key)
+
 const { copyToClipboard } = useClipboard()
-const { translate } = useLocalization()
 </script>
 <template>
-  <template v-if="value !== undefined">
+  <template v-if="props.value !== undefined">
     <div class="property-default">
       <button
         class="property-default-label"
@@ -25,9 +28,9 @@ const { translate } = useLocalization()
         <button
           class="property-default-value group"
           type="button"
-          @click="copyToClipboard(formatValue(value))">
+          @click="copyToClipboard(formatValue(props.value))">
           <span>
-            {{ formatValue(value) }}
+            {{ formatValue(props.value) }}
           </span>
           <ScalarIcon
             class="group-hover:text-c-1 text-c-3 ml-auto min-h-3 min-w-3"

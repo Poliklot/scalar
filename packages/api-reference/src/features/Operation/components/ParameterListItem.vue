@@ -17,6 +17,7 @@ import type {
 } from '@scalar/workspace-store/schemas/v3.1/strict/openapi-document'
 import { computed, ref } from 'vue'
 
+import { useLocalization } from '@/features/localization'
 import type { OperationProps } from '@/features/Operation/Operation.vue'
 
 import ContentTypeSelect from './ContentTypeSelect.vue'
@@ -39,6 +40,7 @@ const { name, parameter, options, collapsableItems, document } = defineProps<{
     | 'expandAllSchemaProperties'
   >
 }>()
+const { translate } = useLocalization()
 
 /** Whether the markdown summary is being truncated */
 const truncated = ref(false)
@@ -190,6 +192,7 @@ const shouldCollapse = computed<boolean>(() =>
             orderSchemaPropertiesBy: options.orderSchemaPropertiesBy,
             expandAllSchemaProperties: options.expandAllSchemaProperties,
             document,
+            translate,
           }"
           :required="'required' in parameter && parameter.required"
           :schema="value" />

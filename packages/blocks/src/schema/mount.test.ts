@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 
 import { createSchema } from './mount'
+import { defaultSchemaTranslate } from './translations'
 
 /** Spins up a store with a single `User` schema. */
 const createStore = async () => {
@@ -44,6 +45,22 @@ describe('mount', () => {
 
     expect(element.querySelector('.scalar-app')).not.toBeNull()
     expect(element.textContent).toContain('name')
+  })
+
+  it('uses a custom translate function passed to createSchema', () => {
+    const element = document.createElement('div')
+
+    const instance = createSchema(element, {
+      schema: {
+        type: 'object',
+        required: ['name'],
+        properties: { name: { type: 'string' } },
+      },
+      translate: (key, params) => (key === 'common.required' ? 'obligatorio' : defaultSchemaTranslate(key, params)),
+    })
+    mounted.push(instance)
+
+    expect(element.textContent).toContain('obligatorio')
   })
 
   it('resolves a schema from the store by pointer', async () => {

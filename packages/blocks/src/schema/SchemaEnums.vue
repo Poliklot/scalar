@@ -6,17 +6,20 @@ import type { SchemaObject } from '@scalar/workspace-store/schemas/v3.1/strict/o
 import { isArraySchema } from '@scalar/workspace-store/schemas/v3.1/strict/type-guards'
 import { computed, ref } from 'vue'
 
-import { useLocalization } from '@/features/localization'
-
 import SchemaEnumPropertyItem from './SchemaEnumPropertyItem.vue'
+import { getSchemaTranslate, type SchemaTranslationKey } from './translations'
+import type { SchemaOptions } from './types'
 
-const { value } = defineProps<{
+const props = defineProps<{
   /** The schema object containing enum values and metadata */
   value: SchemaObject | undefined
   /** Whether to display the enum for property names */
   propertyNames?: boolean
+  options?: SchemaOptions
 }>()
-const { translate } = useLocalization()
+
+const translate = (key: SchemaTranslationKey): string =>
+  getSchemaTranslate(props.options?.translate)(key)
 
 const ENUM_DISPLAY_THRESHOLD = 9
 const INITIAL_VISIBLE_COUNT = 5
@@ -27,12 +30,12 @@ const THIN_SPACE = '\u2009'
  * Handles both direct enum values and nested enum arrays.
  */
 const enumValues = computed(() => {
-  if (!value) {
+  if (!props.value) {
     return []
   }
   return (
-    value.enum ||
-    (isArraySchema(value) && resolve.schema(value.items)?.enum) ||
+    props.value.enum ||
+    (isArraySchema(props.value) && resolve.schema(props.value.items)?.enum) ||
     []
   )
 })
@@ -64,18 +67,19 @@ const hiddenEnumValues = computed(() =>
  * Supports both array and object formats for x-enumDescriptions.
  */
 const getEnumValueDescription = (
-  enumValue: any,
+  enumValue: unknown,
   index: number,
 ): string | undefined => {
   const descriptions =
-    value?.['x-enumDescriptions'] ?? value?.['x-enum-descriptions']
+    props.value?.['x-enumDescriptions'] ?? props.value?.['x-enum-descriptions']
 
   if (!descriptions) {
     return undefined
   }
 
   if (Array.isArray(descriptions)) {
-    return descriptions[index]
+    const description = descriptions[index]
+    return typeof description === 'string' ? description : undefined
   }
 
   if (typeof descriptions === 'object' && descriptions !== null) {
@@ -89,8 +93,9 @@ const getEnumValueDescription = (
  * Formats an enum value with its variable name if available.
  * This supports both x-enum-varnames and x-enumNames extensions.
  */
-const formatEnumValueWithName = (enumValue: any, index: number): string => {
-  const varNames = value?.['x-enum-varnames'] ?? value?.['x-enumNames']
+const formatEnumValueWithName = (enumValue: unknown, index: number): string => {
+  const varNames =
+    props.value?.['x-enum-varnames'] ?? props.value?.['x-enumNames']
   const varName = Array.isArray(varNames) ? varNames[index] : undefined
   return varName
     ? `${enumValue}${THIN_SPACE}=${THIN_SPACE}${varName}`
@@ -112,7 +117,7 @@ const toggleExpanded = () => {
     v-if="enumValues.length > 0"
     class="property-enum">
     <div
-      v-if="propertyNames"
+      v-if="props.propertyNames"
       class="property-enum-property-names">
       {{ translate('common.propertyNames') }}
     </div>

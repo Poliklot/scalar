@@ -10,6 +10,7 @@ import type {
 
 import { Anchor } from '@/components/Anchor'
 import { SectionAccordion, SectionHeaderTag } from '@/components/Section'
+import { useLocalization } from '@/features/localization'
 
 const { eventBus, id, options, document } = defineProps<{
   id: string
@@ -27,6 +28,7 @@ const { eventBus, id, options, document } = defineProps<{
     | 'hideModels'
   >
 }>()
+const { translate } = useLocalization()
 </script>
 <template>
   <SectionAccordion
@@ -44,6 +46,7 @@ const { eventBus, id, options, document } = defineProps<{
           <SchemaHeading
             class="reference-models-label"
             :name="schema.title ?? name"
+            :options="{ ...options, document, translate }"
             :value="schema" />
         </SectionHeaderTag>
       </Anchor>
@@ -58,7 +61,7 @@ const { eventBus, id, options, document } = defineProps<{
         :eventBus="eventBus"
         :hideModelNames="options.hideModels"
         :name="property"
-        :options="{ ...options, document }"
+        :options="{ ...options, document, translate }"
         :required="schema.required?.includes(property)"
         :schema="resolve.schema(value)" />
     </div>
@@ -66,7 +69,7 @@ const { eventBus, id, options, document } = defineProps<{
       <SchemaProperty
         :eventBus="eventBus"
         :hideModelNames="options.hideModels"
-        :options="{ ...options, document }"
+        :options="{ ...options, document, translate }"
         :schema="schema" />
     </div>
   </SectionAccordion>
